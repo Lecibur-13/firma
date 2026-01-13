@@ -27,6 +27,7 @@ import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.misc.http.UrlHttpMethod;
 import es.gob.afirma.core.ui.AOUIFactory;
 import es.gob.afirma.standalone.HttpManager;
+import es.gob.afirma.standalone.config.BrandingConfig;
 import es.gob.afirma.standalone.configurator.common.PreferencesManager;
 
 /** Utilidad para la gesti&oacute;n de actualizaciones de la aplicaci&oacute;n.
@@ -129,7 +130,17 @@ public final class Updater {
 
 		// Configuramos la URL del sitio de actualizacion a partir del fichero interno o,
 		// si esta configurada, preferentemente de la variable de registro
-		updateSite = updaterProperties.getProperty(PREFERENCE_UPDATE_URL_SITE);
+		// Primero intentar obtener desde BrandingConfig (variable de entorno)
+		final BrandingConfig branding = BrandingConfig.getInstance();
+		final String brandingUpdateSite = branding.getUpdateSiteUrl();
+		
+		// Si está configurado en BrandingConfig y es diferente del valor por defecto genérico, usarlo
+		// De lo contrario, usar el valor del archivo de propiedades
+		if (brandingUpdateSite != null && !brandingUpdateSite.equals("https://ejemplo.com/actualizaciones")) { //$NON-NLS-1$
+			updateSite = brandingUpdateSite;
+		} else {
+			updateSite = updaterProperties.getProperty(PREFERENCE_UPDATE_URL_SITE);
+		}
 
 		if (url == null) {
 			LOGGER.warning("El archivo de recursos del actualizador no contiene una URL de comprobacion"); //$NON-NLS-1$

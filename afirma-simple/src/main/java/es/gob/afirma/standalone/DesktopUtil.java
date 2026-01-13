@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 import es.gob.afirma.core.misc.AOUtil;
 import es.gob.afirma.core.misc.BoundedBufferedReader;
 import es.gob.afirma.core.misc.Platform;
+import es.gob.afirma.standalone.config.BrandingConfig;
+import es.gob.afirma.standalone.ui.ImageLoader;
 
 /** Utilidades generales y de control del autoarranque de Autofirma en el inicio de Windows.
  * @author Tom&aacute;s Garc&iacute;a-Mer&aacute;s. */
@@ -42,10 +44,7 @@ public final class DesktopUtil {
 	private static final String REG_VALUE = "Autofirma"; //$NON-NLS-1$
 	private static final String REG_VALUE_OPT = "/v"; //$NON-NLS-1$
 
-	private static final Image ICON = Toolkit.getDefaultToolkit().getImage(
-		DesktopUtil.class.getResource("/resources/logo_cliente_24.png") //$NON-NLS-1$
-	);
-
+	private static Image ICON = null;
 	private static List<Image> ICONS = null;
 
 
@@ -53,6 +52,18 @@ public final class DesktopUtil {
 	/** Obtiene el icono por defecto para los di&aacute;logos gr&aacute;ficos.
 	 * @return Icono por defecto para los di&aacute;logos gr&aacute;ficos. */
 	public static Image getDefaultDialogsIcon() {
+		if (ICON == null) {
+			final BrandingConfig branding = BrandingConfig.getInstance();
+			final java.awt.image.BufferedImage logo = ImageLoader.loadImage(branding.getLogoCliente());
+			if (logo != null) {
+				ICON = logo;
+			} else {
+				// Fallback al recurso por defecto
+				ICON = Toolkit.getDefaultToolkit().getImage(
+					DesktopUtil.class.getResource("/resources/logo_cliente_24.png") //$NON-NLS-1$
+				);
+			}
+		}
 		return ICON;
 	}
 
@@ -62,20 +73,32 @@ public final class DesktopUtil {
 
 		if (ICONS == null) {
 			ICONS = new ArrayList<>();
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_16.png"))); //$NON-NLS-1$
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_24.png"))); //$NON-NLS-1$
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_32.png"))); //$NON-NLS-1$
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_48.png"))); //$NON-NLS-1$
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_128.png"))); //$NON-NLS-1$
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_256.png"))); //$NON-NLS-1$
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_512.png"))); //$NON-NLS-1$
+			final BrandingConfig branding = BrandingConfig.getInstance();
+			
+			// Intentar cargar logos personalizados desde media
+			final String[] sizes = {"16", "24", "32", "48", "128", "256", "512"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+			for (final String size : sizes) {
+				// Construir nombre de archivo basado en el logo configurado
+				final String baseLogoName = branding.getLogoCliente();
+				String logoFile;
+				if (baseLogoName.contains("_")) {
+					// Si el logo tiene formato logo_xxx_256.png, reemplazar el tamaño
+					logoFile = baseLogoName.replaceAll("_\\d+\\.png$", "_" + size + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+				} else {
+					// Si no, usar formato estándar
+					final String baseName = baseLogoName.replace(".png", ""); //$NON-NLS-1$ //$NON-NLS-2$
+					logoFile = baseName + "_" + size + ".png"; //$NON-NLS-1$ //$NON-NLS-2$
+				}
+				
+				final java.awt.image.BufferedImage logo = ImageLoader.loadImage(logoFile);
+				if (logo != null) {
+					ICONS.add(logo);
+				} else {
+					// Fallback a recursos por defecto
+					ICONS.add(Toolkit.getDefaultToolkit().getImage(
+						DesktopUtil.class.getResource("/resources/logo_cliente_" + size + ".png"))); //$NON-NLS-1$ //$NON-NLS-2$
+				}
+			}
 		}
 		return ICONS;
 	}
