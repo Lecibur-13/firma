@@ -288,6 +288,7 @@ public final class PreferencesManager {
 	/** Listado de URLs excluidas del uso de proxy. */
 	public static final String PREFERENCE_GENERAL_PROXY_EXCLUDED_URLS = "proxyExcludedUrls"; //$NON-NLS-1$
 
+
 	//**************** FIN PREFERENCIAS GENERALES ******************************************************************************
 	//**************************************************************************************************************************
 

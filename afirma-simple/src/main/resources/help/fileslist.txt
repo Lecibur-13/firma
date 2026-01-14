@@ -6,7 +6,7 @@ shrd/icon_openoffice.png
 shrd/icon_pdf.png
 shrd/icon_sign.png
 shrd/icon_xml.png
-shrd/logo.png
+
 shrd/logo_cliente.png
 Spanish.lproj/Autofirma.html
 Spanish.lproj/AutofirmaHelpIcon.png
