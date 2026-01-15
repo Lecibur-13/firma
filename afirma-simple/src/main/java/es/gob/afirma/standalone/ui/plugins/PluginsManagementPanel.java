@@ -249,7 +249,7 @@ public final class PluginsManagementPanel extends JPanel {
 	private JPanel createButtonsPanel() {
 
 		final JPanel panel = new JPanel();
-		panel.setLayout(new FlowLayout(FlowLayout.TRAILING));
+		panel.setLayout(new FlowLayout(FlowLayout.TRAILING, 12, 0)); // Espaciado horizontal de 12px
 
 		this.closeButton = new JButton(SimpleAfirmaMessages.getString("PluginsManagementPanel.5")); //$NON-NLS-1$
 		this.closeButton.setMnemonic('C');

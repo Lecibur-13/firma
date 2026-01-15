@@ -66,7 +66,7 @@ public class PluginConfigurationDialog extends JDialog {
 	}
 
 	private JPanel createButtonsPanel() {
-		final JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		final JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0)); // Espaciado horizontal de 12px
 		final JButton okButton = new JButton(SimpleAfirmaMessages.getString("PluginConfigurationDialog.0")); //$NON-NLS-1$
 		okButton.addActionListener(e -> {
 			PluginConfigurationDialog.this.accepted = true;

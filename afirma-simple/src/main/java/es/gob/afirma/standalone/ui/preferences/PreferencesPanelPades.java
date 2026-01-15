@@ -358,7 +358,7 @@ final class PreferencesPanelPades extends JScrollPane {
 	    mainPanel.add(new JPanel(), gbc); // Panel de relleno
 
 	    // Panel para el boton de restaurar la configuracion
-	 	final JPanel panelGeneral = new JPanel(new FlowLayout(FlowLayout.TRAILING));
+	 	final JPanel panelGeneral = new JPanel(new FlowLayout(FlowLayout.TRAILING, 12, 0)); // Espaciado horizontal de 12px
 
 	 	final JButton restoreConfigButton = new JButton(SimpleAfirmaMessages.getString("PreferencesPanel.147")); //$NON-NLS-1$
 

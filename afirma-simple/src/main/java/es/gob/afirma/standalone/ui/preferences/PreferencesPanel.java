@@ -246,7 +246,7 @@ final class PreferencesPanel extends JPanel implements KeyListener, DisposableIn
 	private JPanel createButtonsPanel() {
 
 		final JPanel panel = new JPanel();
-		panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		panel.setLayout(new FlowLayout(FlowLayout.RIGHT, 12, 0)); // Espaciado horizontal de 12px entre botones
 
 		final JButton cancelButton = new JButton(SimpleAfirmaMessages.getString("PreferencesPanel.31")); //$NON-NLS-1$
 		cancelButton.setMnemonic('C');

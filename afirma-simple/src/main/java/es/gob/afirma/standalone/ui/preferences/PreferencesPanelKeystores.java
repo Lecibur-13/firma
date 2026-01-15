@@ -210,6 +210,7 @@ final class PreferencesPanelKeystores extends JScrollPane {
 
         gbc1.gridwidth = 2;
         gbc1.gridx++;
+        gbc1.insets = new Insets(0, 12, 0, 0); // Espaciado izquierdo de 12px
 
         this.showContentButton.addActionListener(new ActionListener() {
             @Override
@@ -453,6 +454,7 @@ final class PreferencesPanelKeystores extends JScrollPane {
         smartCardsPanel.add(this.smartCards, scpConstraints);
 
         scpConstraints.gridx++;
+        scpConstraints.insets = new Insets(0, 8, 0, 0); // Espaciado izquierdo de 8px
 
         this.connectButton.addActionListener(
         		ae -> connectSmartCard(this)
@@ -462,6 +464,7 @@ final class PreferencesPanelKeystores extends JScrollPane {
         smartCardsPanel.add(this.connectButton, scpConstraints);
 
         scpConstraints.gridx++;
+        scpConstraints.insets = new Insets(0, 8, 0, 0); // Espaciado izquierdo de 8px
 
         this.addCardButton.setMnemonic('J');
         this.addCardButton.addActionListener(
@@ -471,6 +474,7 @@ final class PreferencesPanelKeystores extends JScrollPane {
         smartCardsPanel.add(this.addCardButton, scpConstraints);
 
         scpConstraints.gridx++;
+        scpConstraints.insets = new Insets(0, 8, 0, 0); // Espaciado izquierdo de 8px
 
         this.modifyCardButton.setMnemonic('I');
         this.modifyCardButton.addActionListener(
@@ -480,6 +484,7 @@ final class PreferencesPanelKeystores extends JScrollPane {
         smartCardsPanel.add(this.modifyCardButton, scpConstraints);
 
         scpConstraints.gridx++;
+        scpConstraints.insets = new Insets(0, 8, 0, 0); // Espaciado izquierdo de 8px
 
         this.deleteCardButton.setMnemonic('M');
         this.deleteCardButton.addActionListener(
@@ -496,7 +501,7 @@ final class PreferencesPanelKeystores extends JScrollPane {
         mainPanel.add(new JPanel(), gbc);
 
 		// Panel para el boton de restaurar la configuracion
-		final JPanel panelGeneral = new JPanel(new FlowLayout(FlowLayout.TRAILING));
+		final JPanel panelGeneral = new JPanel(new FlowLayout(FlowLayout.TRAILING, 12, 0)); // Espaciado horizontal de 12px
 
 		final JButton restoreConfigButton = new JButton(SimpleAfirmaMessages.getString("PreferencesPanel.147") //$NON-NLS-1$
 		);
