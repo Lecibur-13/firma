@@ -15,26 +15,39 @@ import es.gob.afirma.standalone.config.BrandingConfig;
  */
 public class AboutDialog {
 
+	/** Codifica caracteres especiales HTML para evitar problemas de formato.
+	 * @param text Texto a codificar.
+	 * @return Texto codificado con entidades HTML. */
+	private static String htmlEncode(final String text) {
+		if (text == null) {
+			return "";
+		}
+		return text.replace("&", "&amp;") //$NON-NLS-1$ //$NON-NLS-2$
+				.replace("<", "&lt;") //$NON-NLS-1$ //$NON-NLS-2$
+				.replace(">", "&gt;") //$NON-NLS-1$ //$NON-NLS-2$
+				.replace("\"", "&quot;") //$NON-NLS-1$ //$NON-NLS-2$
+				.replace("'", "&#39;"); //$NON-NLS-1$ //$NON-NLS-2$
+	}
+
     /** Muestra el di&aacute;logo "Acerca de...".
      * @param parentComponent Componente padre para la modalidad. */
     public static void showAbout(final Component parentComponent) {
     	final BrandingConfig branding = BrandingConfig.getInstance();
     	
-    	// Construir el mensaje usando la configuración de branding
-    	final String aboutMessage = String.format(
-    		"<html><p align=\"center\">Autofirma %s<br>&copy; 2011-2025 %s</p><br>" +
-    		"<p>Autofirma es Software Libre; puedes redistribuirlo y/o modificarlo bajo los términos de al menos<br>" +
-    		"una de estas dos licencias: <ul><li>La \"GNU General Public License\" tal como es publicada por la Free Software Foundation;<br>" +
-    		"versión 2 de la Licencia, o (a su elección) cualquier versión posterior.</li><li>La \"European Software License\"; versión 1.1 de la Licencia, o (a su elección) cualquier<br>" +
-    		"versión posterior.</li></ul><p>Autofirma contiene, entre otros, los siguientes componentes de software libre:<br>" +
-    		"iText 2.1.7 (MPL 1.1/LGPL), jMimeMagic (Apache License 2.0), JUniversalCharDet (MPL 1.1),<br>" +
-    		"jXAdES (EUPL 1.1/GPLv3), SpongyCastle (MIT), Java WebSockets (MIT), Proxy Vole (Apache License 2.0), etc.</p>" +
-    		"<p><br>Versión de Java actualmente en uso: %s (%s bits)</p></html>",
-    		SimpleAfirma.getVersion(),
-    		branding.getCopyright(),
-    		System.getProperty("java.version"), //$NON-NLS-1$
-    		Platform.getJavaArch()
-    	);
+    	// Obtener el mensaje traducible y reemplazar la organización con el branding
+    	String aboutMessage = SimpleAfirmaMessages.getString("MainMenu.14", //$NON-NLS-1$
+    			SimpleAfirma.getVersion(),
+    			System.getProperty("java.version"), //$NON-NLS-1$
+    			Platform.getJavaArch());
+    	
+    	// Reemplazar "Gobierno de España" con el copyright configurado si es diferente del valor por defecto
+    	// Solo reemplazar si el branding está personalizado (no es el valor genérico por defecto)
+    	if (!"Organización".equals(branding.getCopyright())) { //$NON-NLS-1$
+    		// Codificar el copyright para HTML antes de insertarlo
+    		final String encodedCopyright = htmlEncode(branding.getCopyright());
+    		aboutMessage = aboutMessage.replace("Gobierno de Espa&ntilde;a", encodedCopyright); //$NON-NLS-1$
+    		aboutMessage = aboutMessage.replace("Gobierno de España", encodedCopyright); //$NON-NLS-1$
+    	}
     	
         AOUIFactory.showMessageDialog(
     		parentComponent,

@@ -134,11 +134,15 @@ public final class Updater {
 		final BrandingConfig branding = BrandingConfig.getInstance();
 		final String brandingUpdateSite = branding.getUpdateSiteUrl();
 		
-		// Si está configurado en BrandingConfig y es diferente del valor por defecto genérico, usarlo
+		// Verificar si la URL de BrandingConfig está configurada mediante variable de entorno
+		// Si la variable de entorno está configurada (no es null y no está vacía), usarla
 		// De lo contrario, usar el valor del archivo de propiedades
-		if (brandingUpdateSite != null && !brandingUpdateSite.equals("https://ejemplo.com/actualizaciones")) { //$NON-NLS-1$
+		final String envUpdateSite = System.getenv("AUTOFIRMA_UPDATE_SITE_URL"); //$NON-NLS-1$
+		if (envUpdateSite != null && !envUpdateSite.trim().isEmpty()) {
+			// La variable de entorno está configurada explícitamente, usar ese valor
 			updateSite = brandingUpdateSite;
 		} else {
+			// No hay variable de entorno configurada, usar el valor del archivo de propiedades
 			updateSite = updaterProperties.getProperty(PREFERENCE_UPDATE_URL_SITE);
 		}
 
