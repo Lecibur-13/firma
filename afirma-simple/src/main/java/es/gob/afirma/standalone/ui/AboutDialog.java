@@ -20,9 +20,9 @@ public class AboutDialog {
         AOUIFactory.showMessageDialog(
     		parentComponent,
 			SimpleAfirmaMessages.getString("MainMenu.14", //$NON-NLS-1$
-					SimpleAfirma.getVersion(),
-					System.getProperty("java.version"), //$NON-NLS-1$,
-					Platform.getJavaArch()),
+    			SimpleAfirma.getVersion(),
+    			System.getProperty("java.version"), //$NON-NLS-1$
+    			Platform.getJavaArch()),
             SimpleAfirmaMessages.getString("MainMenu.15"), //$NON-NLS-1$
             JOptionPane.PLAIN_MESSAGE
         );

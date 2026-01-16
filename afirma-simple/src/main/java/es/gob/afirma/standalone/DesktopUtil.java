@@ -42,17 +42,27 @@ public final class DesktopUtil {
 	private static final String REG_VALUE = "Autofirma"; //$NON-NLS-1$
 	private static final String REG_VALUE_OPT = "/v"; //$NON-NLS-1$
 
-	private static final Image ICON = Toolkit.getDefaultToolkit().getImage(
-		DesktopUtil.class.getResource("/resources/logo_cliente_24.png") //$NON-NLS-1$
-	);
-
-	private static List<Image> ICONS = null;
+	private static volatile Image ICON = null;
+	private static volatile List<Image> ICONS = null;
 
 
 
 	/** Obtiene el icono por defecto para los di&aacute;logos gr&aacute;ficos.
 	 * @return Icono por defecto para los di&aacute;logos gr&aacute;ficos. */
 	public static Image getDefaultDialogsIcon() {
+		// Double-check locking pattern para inicialización thread-safe
+		if (ICON == null) {
+			synchronized (DesktopUtil.class) {
+				if (ICON == null) {
+					final java.net.URL resourceUrl = DesktopUtil.class.getResource("/resources/logo_cliente_24.png"); //$NON-NLS-1$
+					if (resourceUrl != null) {
+						ICON = Toolkit.getDefaultToolkit().getImage(resourceUrl);
+					} else {
+						LOGGER.warning("No se pudo encontrar el recurso de logo por defecto logo_cliente_24.png"); //$NON-NLS-1$
+					}
+				}
+			}
+		}
 		return ICON;
 	}
 
@@ -60,22 +70,23 @@ public final class DesktopUtil {
 	 * @return Icono por defecto para los di&aacute;logos gr&aacute;ficos. */
 	public static List<Image> getIconImages() {
 
+		// Double-check locking pattern para inicialización thread-safe
 		if (ICONS == null) {
-			ICONS = new ArrayList<>();
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_16.png"))); //$NON-NLS-1$
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_24.png"))); //$NON-NLS-1$
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_32.png"))); //$NON-NLS-1$
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_48.png"))); //$NON-NLS-1$
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_128.png"))); //$NON-NLS-1$
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_256.png"))); //$NON-NLS-1$
-			ICONS.add(Toolkit.getDefaultToolkit().getImage(
-					DesktopUtil.class.getResource("/resources/logo_cliente_512.png"))); //$NON-NLS-1$
+			synchronized (DesktopUtil.class) {
+				if (ICONS == null) {
+					final List<Image> iconsList = new ArrayList<>();
+					final String[] sizes = {"16", "24", "32", "48", "128", "256", "512"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+					for (final String size : sizes) {
+						final java.net.URL resourceUrl = DesktopUtil.class.getResource("/resources/logo_cliente_" + size + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+						if (resourceUrl != null) {
+							iconsList.add(Toolkit.getDefaultToolkit().getImage(resourceUrl));
+						} else {
+							LOGGER.warning("No se pudo encontrar el recurso de logo por defecto para el tamaño " + size + ". Se omitira este tamaño."); //$NON-NLS-1$ //$NON-NLS-2$
+						}
+					}
+					ICONS = iconsList;
+				}
+			}
 		}
 		return ICONS;
 	}

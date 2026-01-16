@@ -955,11 +955,35 @@ public final class SignPanel extends JPanel implements LoadDataFileListener, Sig
 		    	this.loadDataListener.loadFiles(files, null);
 			});
 
+	        // Panel superior con logo institucional y mensaje de bienvenida
+	        final JPanel topPanel = new JPanel(new BorderLayout(10, 10));
+	        topPanel.setOpaque(false);
+	        
+	        // Logo institucional: primero busca en media/logo/, luego en recursos
+	        final ImageIcon logoIcon = ImageLoader.loadInstitutionalLogo();
+	        if (logoIcon != null) {
+	        	final JLabel logoLabel = new JLabel(logoIcon);
+	        	logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
+	        	logoLabel.setFocusable(false);
+	        	// Redimensionar el logo si es muy grande (máximo 128px de altura)
+	        	if (logoIcon.getIconHeight() > 128) {
+	        		final java.awt.Image logoImage = logoIcon.getImage();
+	        		final int newHeight = 128;
+	        		final int newWidth = (logoIcon.getIconWidth() * newHeight) / logoIcon.getIconHeight();
+	        		final java.awt.Image scaledImage = logoImage.getScaledInstance(newWidth, newHeight, java.awt.Image.SCALE_SMOOTH);
+	        		logoLabel.setIcon(new ImageIcon(scaledImage));
+	        	}
+	        	topPanel.add(logoLabel, BorderLayout.PAGE_START);
+	        }
+	        
 	        final JLabel welcomeLabel = new JLabel(SimpleAfirmaMessages.getString("SignPanel.14")); //$NON-NLS-1$
 	        welcomeLabel.setFocusable(false);
 	        welcomeLabel.setFont(welcomeLabel.getFont().deriveFont(Font.PLAIN, 26));
+	        welcomeLabel.setHorizontalAlignment(SwingConstants.CENTER);
 	        welcomeLabel.setLabelFor(getSelectButton());
-	        this.add(welcomeLabel, BorderLayout.PAGE_START);
+	        topPanel.add(welcomeLabel, logoIcon != null ? BorderLayout.CENTER : BorderLayout.PAGE_START);
+	        
+	        this.add(topPanel, BorderLayout.PAGE_START);
 
 	        final String intro = SimpleAfirmaMessages.getString("SignPanel.40"); //$NON-NLS-1$
 
@@ -979,6 +1003,7 @@ public final class SignPanel extends JPanel implements LoadDataFileListener, Sig
 	        // Configuramos el color
 	        if (!LookAndFeelManager.WINDOWS_HIGH_CONTRAST) {
 	            setBackground(LookAndFeelManager.DEFAULT_COLOR);
+	            topPanel.setBackground(LookAndFeelManager.DEFAULT_COLOR);
 	            introPanel.setBackground(LookAndFeelManager.DEFAULT_COLOR);
 	            selectPanel.setBackground(LookAndFeelManager.DEFAULT_COLOR);
 	            welcomeLabel.setForeground(new Color(3399));

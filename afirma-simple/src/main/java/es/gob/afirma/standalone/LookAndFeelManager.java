@@ -154,22 +154,15 @@ public final class LookAndFeelManager {
             System.setProperty("apple.awt.graphics.EnableDeferredUpdates", "true"); //$NON-NLS-1$ //$NON-NLS-2$
             System.setProperty("apple.laf.useScreenMenuBar", "true"); //$NON-NLS-1$ //$NON-NLS-2$
         }
-        // Configuracion necesaria para que la aplicacion se muestre correctamente en pantallas HDPI
-        else if (Platform.OS.WINDOWS.equals(Platform.getOS()) && HDPIManager.isHDPIDevice()) {
-           	setLookAndFeel("Metal"); //$NON-NLS-1$
+        // Esto garantiza que los scrollbars sean los nativos del sistema operativo
+        try {
+        	UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
-        // Configuramos el Look&Feel del sistema si se considero necesario por los modos de accesibilidad
-        else if(useSystemLookAndFeel){
-        	try {
-        		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        	}
-        	catch (final Exception e2) {
-        		LOGGER.warning(
-        				"No se ha podido establecer ningun 'Look&Feel': " + e2 //$NON-NLS-1$
-        				);
-        	}
-        }
-        else {
+        catch (final Exception e2) {
+        	LOGGER.warning(
+        			"No se ha podido establecer el Look&Feel del sistema, se intentara con Nimbus: " + e2 //$NON-NLS-1$
+        			);
+        	// Fallback a Nimbus si falla el System Look and Feel
         	setLookAndFeel("Nimbus"); //$NON-NLS-1$
         }
 

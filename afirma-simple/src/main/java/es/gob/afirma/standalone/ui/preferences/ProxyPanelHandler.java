@@ -203,7 +203,12 @@ public class ProxyPanelHandler {
 					}
 					catch (final GeneralSecurityException e) {
 						LOGGER.severe("Error cifrando la contrasena del Proxy: " + e); //$NON-NLS-1$
-						JOptionPane.showMessageDialog(this.view.getParent(), SimpleAfirmaMessages.getString("ProxyDialog.19")); //$NON-NLS-1$);
+						// Usar AOUIFactory para que se intercepte el reemplazo de botones
+						AOUIFactory.showMessageDialog(
+								this.view.getParent(),
+								SimpleAfirmaMessages.getString("ProxyDialog.19"), //$NON-NLS-1$
+								SimpleAfirmaMessages.getString("ProxyDialog.19"), //$NON-NLS-1$
+								JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
 						PreferencesManager.put(PreferencesManager.PREFERENCE_GENERAL_PROXY_PASSWORD, ""); //$NON-NLS-1$
 					}
 				}
@@ -258,7 +263,12 @@ public class ProxyPanelHandler {
 		catch (final Exception e) {
 			pwd = null;
 			LOGGER.warning("No se pudo descifrar la contrasena del proxy. Se omitira la contrasena: " + e); //$NON-NLS-1$
-			JOptionPane.showMessageDialog(this.view, SimpleAfirmaMessages.getString("ProxyDialog.18")); //$NON-NLS-1$);
+			// Usar AOUIFactory para que se intercepte el reemplazo de botones
+			AOUIFactory.showMessageDialog(
+					this.view,
+					SimpleAfirmaMessages.getString("ProxyDialog.18"), //$NON-NLS-1$
+					SimpleAfirmaMessages.getString("ProxyDialog.18"), //$NON-NLS-1$
+					JOptionPane.WARNING_MESSAGE); //$NON-NLS-1$
 			// Eliminamos la contrasena mal cifrada de las preferencias
 			// Si no la eliminamos, el dialogo de error persistiria aunque tuviesemos sin marcar
 			// la casilla de "Usar proxy", obligandonos a establecer una solo para evitar el error

@@ -38,6 +38,7 @@ import es.gob.afirma.standalone.VisorFirma;
 import es.gob.afirma.standalone.plugins.GenericMenuOption;
 import es.gob.afirma.standalone.plugins.manager.PluginException;
 import es.gob.afirma.standalone.plugins.manager.PluginLoader;
+import es.gob.afirma.standalone.ui.efirmasat.EfirmaSatConverterDialog;
 import es.gob.afirma.standalone.ui.plugins.PluginsManagementDialog;
 import es.gob.afirma.standalone.ui.preferences.PreferencesDialog;
 import es.gob.afirma.standalone.ui.restoreconfig.RestoreConfigDialog;
@@ -226,6 +227,14 @@ public final class MainMenu extends JMenuBar {
 
 		toolsMenu.add(pluginsMenuItem);
 
+		// Opcion de menu para convertir e.firma SAT a PFX
+		toolsMenu.addSeparator();
+		final JMenuItem efirmaSatMenuItem = new JMenuItem(SimpleAfirmaMessages.getString("MainMenu.38")); //$NON-NLS-1$
+		efirmaSatMenuItem.setMnemonic(KeyEvent.VK_E);
+		efirmaSatMenuItem.getAccessibleContext().setAccessibleDescription(SimpleAfirmaMessages.getString("MainMenu.39")); //$NON-NLS-1$
+		efirmaSatMenuItem.addActionListener(ae -> showEfirmaSatConverter());
+
+		toolsMenu.add(efirmaSatMenuItem);
 
 		this.add(toolsMenu);
 
@@ -401,6 +410,11 @@ public final class MainMenu extends JMenuBar {
     	if (getSimpleAfirma().getCurrentPanel() instanceof PluginButtonsContainer) {
     		((PluginButtonsContainer) getSimpleAfirma().getCurrentPanel()).refreshPluginButtonsContainer();
     	}
+    }
+
+    void showEfirmaSatConverter() {
+    	final EfirmaSatConverterDialog dialog = new EfirmaSatConverterDialog(getParentComponent());
+    	dialog.showDialog();
     }
 
     /**

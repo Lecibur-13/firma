@@ -106,7 +106,7 @@ public class PermissionsDialog extends JDialog implements KeyListener {
 			dispose();
 		});
 
-        final JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        final JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 0)); // Espaciado horizontal de 12px
         buttonsPanel.add(okButton);
         buttonsPanel.add(cancelButton);
 

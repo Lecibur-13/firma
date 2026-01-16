@@ -149,7 +149,7 @@ final class ConfirmImportCertDialog extends JDialog  {
 
 	private JPanel createCertsButtonsPanel() {
 
-		final JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		final JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0)); // Espaciado horizontal de 12px
 
 		this.openCertBtn = new JButton(SimpleAfirmaMessages.getString("TrustedCertificatesDialog.17")); //$NON-NLS-1$
 		this.openCertBtn.addActionListener(

@@ -141,7 +141,7 @@ public final class RestoreConfigPanel extends JPanel implements KeyListener, Dis
 	private JPanel createButtonsPanel() {
 
 		final JPanel panel = new JPanel();
-		panel.setLayout(new FlowLayout(FlowLayout.TRAILING));
+		panel.setLayout(new FlowLayout(FlowLayout.TRAILING, 12, 0)); // Espaciado horizontal de 12px
 
 		final JButton closeButton = new JButton(SimpleAfirmaMessages.getString("RestoreConfigPanel.5")); //$NON-NLS-1$
 		closeButton.setMnemonic('C');

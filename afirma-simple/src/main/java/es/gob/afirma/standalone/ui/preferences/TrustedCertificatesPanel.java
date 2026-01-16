@@ -93,7 +93,7 @@ final class TrustedCertificatesPanel extends JPanel  {
 
 	private JPanel createButtonsPanel() {
 
-		final JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		final JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0)); // Espaciado horizontal de 12px
 
 		this.importCertButton = new JButton(SimpleAfirmaMessages.getString("TrustedCertificatesDialog.2")); //$NON-NLS-1$
 		this.importCertButton.addActionListener(
