@@ -30,8 +30,6 @@ import java.util.logging.Logger;
 import es.gob.afirma.core.misc.AOUtil;
 import es.gob.afirma.core.misc.BoundedBufferedReader;
 import es.gob.afirma.core.misc.Platform;
-import es.gob.afirma.standalone.config.BrandingConfig;
-import es.gob.afirma.standalone.ui.ImageLoader;
 
 /** Utilidades generales y de control del autoarranque de Autofirma en el inicio de Windows.
  * @author Tom&aacute;s Garc&iacute;a-Mer&aacute;s. */
@@ -56,18 +54,11 @@ public final class DesktopUtil {
 		if (ICON == null) {
 			synchronized (DesktopUtil.class) {
 				if (ICON == null) {
-					final BrandingConfig branding = BrandingConfig.getInstance();
-					final java.awt.image.BufferedImage logo = ImageLoader.loadImage(branding.getLogoCliente());
-					if (logo != null) {
-						ICON = logo;
+					final java.net.URL resourceUrl = DesktopUtil.class.getResource("/resources/logo_cliente_24.png"); //$NON-NLS-1$
+					if (resourceUrl != null) {
+						ICON = Toolkit.getDefaultToolkit().getImage(resourceUrl);
 					} else {
-						// Fallback al recurso por defecto
-						final java.net.URL resourceUrl = DesktopUtil.class.getResource("/resources/logo_cliente_24.png"); //$NON-NLS-1$
-						if (resourceUrl != null) {
-							ICON = Toolkit.getDefaultToolkit().getImage(resourceUrl);
-						} else {
-							LOGGER.warning("No se pudo encontrar el recurso de logo por defecto logo_cliente_24.png"); //$NON-NLS-1$
-						}
+						LOGGER.warning("No se pudo encontrar el recurso de logo por defecto logo_cliente_24.png"); //$NON-NLS-1$
 					}
 				}
 			}
@@ -84,58 +75,13 @@ public final class DesktopUtil {
 			synchronized (DesktopUtil.class) {
 				if (ICONS == null) {
 					final List<Image> iconsList = new ArrayList<>();
-					final BrandingConfig branding = BrandingConfig.getInstance();
-					
-					// Intentar cargar logos personalizados desde media
 					final String[] sizes = {"16", "24", "32", "48", "128", "256", "512"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
 					for (final String size : sizes) {
-						// Construir nombre de archivo basado en el logo configurado
-						final String baseLogoName = branding.getLogoCliente();
-						String logoFile;
-						
-						// Verificar si el nombre termina con el patrón _<dígitos>.<extensión> (case-insensitive)
-						// Usar regex case-insensitive para manejar .png, .PNG, .Png, etc.
-						if (baseLogoName.matches("(?i).*_\\d+\\.png$")) { //$NON-NLS-1$
-							// Si el logo tiene formato logo_xxx_256.png, reemplazar el tamaño
-							// Extraer la extensión original preservando su case
-							final String baseNameLower = baseLogoName.toLowerCase();
-							final int extIndex = baseNameLower.lastIndexOf(".png"); //$NON-NLS-1$
-							String originalExtension = ".png"; //$NON-NLS-1$
-							if (extIndex >= 0) {
-								// Preservar el case original de la extensión
-								originalExtension = baseLogoName.substring(extIndex);
-							}
-							// Reemplazar el tamaño manteniendo la extensión original
-							logoFile = baseLogoName.replaceAll("(?i)_\\d+\\.png$", "_" + size + originalExtension); //$NON-NLS-1$ //$NON-NLS-2$
+						final java.net.URL resourceUrl = DesktopUtil.class.getResource("/resources/logo_cliente_" + size + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
+						if (resourceUrl != null) {
+							iconsList.add(Toolkit.getDefaultToolkit().getImage(resourceUrl));
 						} else {
-							// Si no tiene el formato esperado, construir el nombre con el tamaño
-							// Remover la extensión .png si existe (case-insensitive)
-							String baseName = baseLogoName;
-							final String baseNameLower = baseName.toLowerCase();
-							String originalExtension = ".png"; //$NON-NLS-1$
-							if (baseNameLower.endsWith(".png")) { //$NON-NLS-1$
-								// Encontrar la posición de la extensión preservando el case original
-								final int extIndex = baseNameLower.lastIndexOf(".png"); //$NON-NLS-1$
-								if (extIndex >= 0) {
-									originalExtension = baseName.substring(extIndex);
-									baseName = baseName.substring(0, extIndex);
-								}
-							}
-							// Construir el nombre con el tamaño preservando el case de la extensión original
-							logoFile = baseName + "_" + size + originalExtension; //$NON-NLS-1$
-						}
-						
-						final java.awt.image.BufferedImage logo = ImageLoader.loadImage(logoFile);
-						if (logo != null) {
-							iconsList.add(logo);
-						} else {
-							// Fallback a recursos por defecto
-							final java.net.URL resourceUrl = DesktopUtil.class.getResource("/resources/logo_cliente_" + size + ".png"); //$NON-NLS-1$ //$NON-NLS-2$
-							if (resourceUrl != null) {
-								iconsList.add(Toolkit.getDefaultToolkit().getImage(resourceUrl));
-							} else {
-								LOGGER.warning("No se pudo encontrar el recurso de logo por defecto para el tamaño " + size + ". Se omitira este tamaño."); //$NON-NLS-1$ //$NON-NLS-2$
-							}
+							LOGGER.warning("No se pudo encontrar el recurso de logo por defecto para el tamaño " + size + ". Se omitira este tamaño."); //$NON-NLS-1$ //$NON-NLS-2$
 						}
 					}
 					ICONS = iconsList;

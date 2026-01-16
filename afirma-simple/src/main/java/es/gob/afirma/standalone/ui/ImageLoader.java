@@ -4,15 +4,11 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
-
-import es.gob.afirma.standalone.config.BrandingConfig;
 
 public class ImageLoader {
 
@@ -48,8 +44,7 @@ public class ImageLoader {
 	}
 
 	/**
-	 * Carga una imagen, buscando primero en el directorio de media personalizado,
-	 * y si no se encuentra, en los recursos por defecto.
+	 * Carga una imagen desde los recursos por defecto.
 	 * 
 	 * @param filename Nombre del archivo de imagen
 	 * @return BufferedImage cargada o null si no se encuentra
@@ -57,23 +52,7 @@ public class ImageLoader {
 	public static BufferedImage loadImage(final String filename) {
 		BufferedImage image = null;
 
-		// Primero intentar cargar desde el directorio de media personalizado
-		final BrandingConfig branding = BrandingConfig.getInstance();
-		final String logoPath = branding.getLogoPath(filename);
-
-		if (logoPath != null) {
-			try (final FileInputStream fis = new FileInputStream(new File(logoPath))) {
-				image = ImageIO.read(fis);
-				LOGGER.fine("Imagen cargada desde media: " + logoPath); //$NON-NLS-1$
-				return image;
-			}
-			catch (final Exception e) {
-				LOGGER.warning("No se pudo cargar la imagen desde media '" + logoPath + "': " + e); //$NON-NLS-1$ //$NON-NLS-2$
-				// Continuar para intentar cargar desde recursos
-			}
-		}
-
-		// Si no se encontró en media, intentar cargar desde recursos por defecto
+		// Cargar desde recursos por defecto
 		try (final InputStream is = ImageLoader.class.getResourceAsStream("/resources/" + filename)) { //$NON-NLS-1$
 			if (is != null) {
 				image = ImageIO.read(is);

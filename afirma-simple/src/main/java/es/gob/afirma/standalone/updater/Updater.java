@@ -27,7 +27,6 @@ import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.misc.http.UrlHttpMethod;
 import es.gob.afirma.core.ui.AOUIFactory;
 import es.gob.afirma.standalone.HttpManager;
-import es.gob.afirma.standalone.config.BrandingConfig;
 import es.gob.afirma.standalone.configurator.common.PreferencesManager;
 
 /** Utilidad para la gesti&oacute;n de actualizaciones de la aplicaci&oacute;n.
@@ -130,21 +129,7 @@ public final class Updater {
 
 		// Configuramos la URL del sitio de actualizacion a partir del fichero interno o,
 		// si esta configurada, preferentemente de la variable de registro
-		// Primero intentar obtener desde BrandingConfig (variable de entorno)
-		final BrandingConfig branding = BrandingConfig.getInstance();
-		final String brandingUpdateSite = branding.getUpdateSiteUrl();
-		
-		// Verificar si la URL de BrandingConfig está configurada mediante variable de entorno
-		// Si la variable de entorno está configurada (no es null y no está vacía), usarla
-		// De lo contrario, usar el valor del archivo de propiedades
-		final String envUpdateSite = System.getenv("AUTOFIRMA_UPDATE_SITE_URL"); //$NON-NLS-1$
-		if (envUpdateSite != null && !envUpdateSite.trim().isEmpty()) {
-			// La variable de entorno está configurada explícitamente, usar ese valor
-			updateSite = brandingUpdateSite;
-		} else {
-			// No hay variable de entorno configurada, usar el valor del archivo de propiedades
-			updateSite = updaterProperties.getProperty(PREFERENCE_UPDATE_URL_SITE);
-		}
+		updateSite = updaterProperties.getProperty(PREFERENCE_UPDATE_URL_SITE);
 
 		if (url == null) {
 			LOGGER.warning("El archivo de recursos del actualizador no contiene una URL de comprobacion"); //$NON-NLS-1$
