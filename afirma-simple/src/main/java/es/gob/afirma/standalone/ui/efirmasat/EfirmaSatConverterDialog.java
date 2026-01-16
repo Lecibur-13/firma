@@ -37,6 +37,7 @@ import javax.swing.JTextField;
 import es.gob.afirma.core.AOCancelledOperationException;
 import es.gob.afirma.core.misc.Platform;
 import es.gob.afirma.core.ui.AOUIFactory;
+import es.gob.afirma.standalone.DesktopUtil;
 import es.gob.afirma.standalone.SimpleAfirmaMessages;
 
 /** Di&aacute;logo para convertir e.firma del SAT (.cer + .key) a PFX e instalarlo en Windows.
@@ -556,40 +557,73 @@ public final class EfirmaSatConverterDialog extends JDialog {
 	/** Busca OpenSSL en el sistema.
 	 * @return Ruta completa a openssl.exe o "openssl" si está en el PATH, o null si no se encuentra */
 	private static String findOpenSsl() {
-		// Primero intentamos con "openssl" directamente (si está en el PATH)
+		// PRIORIDAD 1: Intentar con "openssl" directamente (si está en el PATH)
 		if (isOpenSslAvailable("openssl")) { //$NON-NLS-1$
+			LOGGER.info("OpenSSL encontrado en el PATH del sistema"); //$NON-NLS-1$
 			return "openssl"; //$NON-NLS-1$
 		}
 		
-		// En Windows, buscamos en ubicaciones comunes
+		// PRIORIDAD 2: Buscar en el directorio de instalación de Autofirma
+		final File appDir = DesktopUtil.getApplicationDirectory();
+		if (appDir != null) {
+			// Buscar en openssl/bin/openssl.exe (estructura estándar de OpenSSL)
+			final File opensslInApp = new File(appDir, "openssl" + File.separator + "bin" + File.separator + "openssl.exe"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			if (opensslInApp.exists() && isOpenSslAvailable(opensslInApp.getAbsolutePath())) {
+				LOGGER.info("OpenSSL encontrado en el directorio de instalación: " + opensslInApp.getAbsolutePath()); //$NON-NLS-1$
+				return opensslInApp.getAbsolutePath();
+			}
+			// También buscar directamente en el directorio de la aplicación (si está en la raíz)
+			final File opensslDirect = new File(appDir, "openssl.exe"); //$NON-NLS-1$
+			if (opensslDirect.exists() && isOpenSslAvailable(opensslDirect.getAbsolutePath())) {
+				LOGGER.info("OpenSSL encontrado en el directorio de instalación: " + opensslDirect.getAbsolutePath()); //$NON-NLS-1$
+				return opensslDirect.getAbsolutePath();
+			}
+		}
+		
+		// PRIORIDAD 3: En Windows, buscar en ubicaciones comunes usando variables de entorno
 		if (Platform.OS.WINDOWS.equals(Platform.getOS())) {
-			// Buscar en ubicaciones comunes de Windows
+			final List<String> commonPaths = new ArrayList<>();
+			
+			// Obtener variables de entorno de Windows dinámicamente
 			final String programFiles = System.getenv("ProgramFiles"); //$NON-NLS-1$
 			final String programFilesX86 = System.getenv("ProgramFiles(x86)"); //$NON-NLS-1$
+			final String programData = System.getenv("ProgramData"); //$NON-NLS-1$
+			final String localAppData = System.getenv("LOCALAPPDATA"); //$NON-NLS-1$
+			final String commonProgramFiles = System.getenv("CommonProgramFiles"); //$NON-NLS-1$
+			final String commonProgramFilesX86 = System.getenv("CommonProgramFiles(x86)"); //$NON-NLS-1$
 			
-			final List<String> commonPaths = new ArrayList<>();
-			commonPaths.add("C:\\OpenSSL-Win64\\bin\\openssl.exe"); //$NON-NLS-1$
-			commonPaths.add("C:\\OpenSSL-Win32\\bin\\openssl.exe"); //$NON-NLS-1$
-			commonPaths.add("C:\\Program Files\\OpenSSL-Win64\\bin\\openssl.exe"); //$NON-NLS-1$
-			commonPaths.add("C:\\Program Files\\OpenSSL-Win32\\bin\\openssl.exe"); //$NON-NLS-1$
-			commonPaths.add("C:\\Program Files (x86)\\OpenSSL-Win32\\bin\\openssl.exe"); //$NON-NLS-1$
-			
-			// Agregar rutas basadas en variables de entorno si existen
+			// Construir rutas dinámicamente usando variables de entorno
 			if (programFiles != null) {
-				commonPaths.add(programFiles + "\\OpenSSL-Win64\\bin\\openssl.exe"); //$NON-NLS-1$
-				commonPaths.add(programFiles + "\\OpenSSL-Win32\\bin\\openssl.exe"); //$NON-NLS-1$
+				commonPaths.add(programFiles + File.separator + "OpenSSL-Win64" + File.separator + "bin" + File.separator + "openssl.exe"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				commonPaths.add(programFiles + File.separator + "OpenSSL-Win32" + File.separator + "bin" + File.separator + "openssl.exe"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			}
 			if (programFilesX86 != null) {
-				commonPaths.add(programFilesX86 + "\\OpenSSL-Win32\\bin\\openssl.exe"); //$NON-NLS-1$
+				commonPaths.add(programFilesX86 + File.separator + "OpenSSL-Win32" + File.separator + "bin" + File.separator + "openssl.exe"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			}
+			if (programData != null) {
+				commonPaths.add(programData + File.separator + "OpenSSL-Win64" + File.separator + "bin" + File.separator + "openssl.exe"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				commonPaths.add(programData + File.separator + "OpenSSL-Win32" + File.separator + "bin" + File.separator + "openssl.exe"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			}
+			if (localAppData != null) {
+				commonPaths.add(localAppData + File.separator + "Programs" + File.separator + "OpenSSL" + File.separator + "bin" + File.separator + "openssl.exe"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+			}
+			if (commonProgramFiles != null) {
+				commonPaths.add(commonProgramFiles + File.separator + "OpenSSL-Win64" + File.separator + "bin" + File.separator + "openssl.exe"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			}
+			if (commonProgramFilesX86 != null) {
+				commonPaths.add(commonProgramFilesX86 + File.separator + "OpenSSL-Win32" + File.separator + "bin" + File.separator + "openssl.exe"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			}
 			
+			// Buscar en las rutas construidas dinámicamente
 			for (final String path : commonPaths) {
 				if (path != null && new File(path).exists() && isOpenSslAvailable(path)) {
+					LOGGER.info("OpenSSL encontrado en ubicación del sistema: " + path); //$NON-NLS-1$
 					return path;
 				}
 			}
 		}
 		
+		LOGGER.warning("OpenSSL no encontrado en ninguna ubicación conocida"); //$NON-NLS-1$
 		return null;
 	}
 	
