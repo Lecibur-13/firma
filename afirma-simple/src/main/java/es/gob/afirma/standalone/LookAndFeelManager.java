@@ -154,7 +154,6 @@ public final class LookAndFeelManager {
             System.setProperty("apple.awt.graphics.EnableDeferredUpdates", "true"); //$NON-NLS-1$ //$NON-NLS-2$
             System.setProperty("apple.laf.useScreenMenuBar", "true"); //$NON-NLS-1$ //$NON-NLS-2$
         }
-        // Siempre usar el Look&Feel nativo del sistema para obtener scrollbars nativos
         // Esto garantiza que los scrollbars sean los nativos del sistema operativo
         try {
         	UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
