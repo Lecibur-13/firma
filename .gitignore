@@ -77,6 +77,7 @@ hs_err_pid*
 .DS_Store
 
 media/logo/*
+media/cert/*
 
 # Archivos de configuración con rutas personales (_produccion)
 *_prod.SED
@@ -84,4 +85,5 @@ media/logo/*
 release/*.exe
 release/*.log
 release/media/logo/*
+release/media/cert/*
 

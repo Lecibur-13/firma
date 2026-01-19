@@ -1,6 +1,6 @@
-# Guía para Creación de ZIP de Producción
+# Guía para Creación de Instalador de Producción
 
-Esta guía describe el proceso completo para crear un paquete de instalación de Autofirma en formato ZIP autoextraible.
+Esta guía describe el proceso completo para crear un paquete de instalación de Autofirma en formato autoextraible usando WinRAR.
 
 ## Paso 1: Compilar el Proyecto con Maven
 
@@ -42,7 +42,7 @@ Antes de comenzar, asegúrate de tener instalado:
 ### 2.1 Crear Carpeta de Trabajo
 
 - La carpeta `release` ya debe existir y ser el directorio de trabajo para todos los archivos del instalador
-- Los archivos de configuración (`afirma_installer.SED` y `launch4j_config.xml`) deben estar en la carpeta `release`
+- El archivo de configuración `launch4j_config.xml` debe estar en la carpeta `release`
 
 ### 2.2 Convertir JAR a EXE con Launch4j
 
@@ -75,20 +75,53 @@ Si deseas personalizar la aplicación con un logo institucional:
    - Asegurarse de que el logo esté en: `release\media\logo\logo.png`
    - La aplicación buscará el logo en esta ubicación relativa al directorio donde se ejecute el EXE
 
-### 2.4 Crear Archivo Autoextraible con WinRAR
+### 2.4 Agregar Certificado CA del SAT
+
+Es necesario incluir el archivo de certificado CA del SAT:
+
+1. **Preparar el certificado CA**:
+   - Crear la estructura de carpetas `release\media\cert\` si no existe
+   - Copiar el archivo `CA.pem` a `release\media\cert\CA.pem`
+   - Este archivo contiene la cadena donde se unifican todos los certificados del SAT
+   - **IMPORTANTE**: Este archivo es necesario para la validación de certificados del SAT
+
+2. **Verificar la ubicación**:
+   - Asegurarse de que el certificado esté en: `release\media\cert\CA.pem`
+   - La aplicación buscará el certificado en esta ubicación relativa al directorio donde se ejecute el EXE
+
+### 2.5 Agregar Carpeta bin con OpenSSL
+
+La carpeta `bin` con los archivos de OpenSSL se agregará mediante medios externos al momento de hacer build:
+
+1. **Preparar la carpeta bin**:
+   - Crear la estructura de carpetas `release\bin\` si no existe
+   - La carpeta `bin` debe contener los siguientes archivos:
+     - `openssl.exe` - Ejecutable de OpenSSL
+     - `libssl-3-x64.dll` - Biblioteca SSL de OpenSSL
+     - `libcrypto-3-x64.dll` - Biblioteca criptográfica de OpenSSL
+   - **IMPORTANTE**: Estos archivos se agregarán mediante medios externos durante el proceso de build
+   - No se requiere instalación completa de OpenSSL, solo estos archivos portables
+
+2. **Verificar la ubicación**:
+   - Asegurarse de que la carpeta `bin` esté en: `release\bin\`
+   - Los archivos de OpenSSL deben estar disponibles en esta ubicación relativa al directorio donde se ejecute el EXE
+
+### 2.6 Crear Archivo Autoextraible con WinRAR
 
 1. **Seleccionar archivos para empaquetar**:
    - Navegar a la carpeta `release`
-   - Seleccionar tanto `autofirma.exe` como la carpeta `media` (si existe)
+   - Seleccionar `autofirma.exe`, la carpeta `media` (si existe) y la carpeta `bin` (si existe)
    - Hacer clic derecho sobre los archivos seleccionados
 
 2. **Iniciar compresión**:
    - En el menú contextual de WinRAR, seleccionar **"Añadir al archivo..."**
-   - **IMPORTANTE**: Asegurarse de incluir la carpeta `media` junto con el `autofirma.exe` para que el logo esté disponible cuando se extraiga el autoextraible
+   - **IMPORTANTE**: Asegurarse de incluir:
+     - La carpeta `media` junto con el `autofirma.exe` para que el logo y el certificado CA estén disponibles
+     - La carpeta `bin` con los archivos de OpenSSL para que la aplicación funcione correctamente
 
 3. **Configurar opciones de compresión**:
    - En la ventana de opciones, marcar la casilla: **"Crear un archivo autoextraible"**
-   - Cambiar el nombre del archivo a: `autofirma-installer.exe` (debe coincidir con el nombre esperado en el archivo SED)
+   - Cambiar el nombre del archivo a: `autofirma-installer.exe`
 
 4. **Configurar opciones avanzadas**:
    - Ir a la pestaña **"Avanzado"**
@@ -111,76 +144,21 @@ Si deseas personalizar la aplicación con un logo institucional:
    - El resultado será un archivo ejecutable autoextraible: `autofirma-installer.exe`
    - **IMPORTANTE**: Asegurarse de que el archivo se guarde en la carpeta `release` y tenga exactamente el nombre `autofirma-installer.exe`
 
-## Paso 3: Agregar Instalador de OpenSSL
-
-1. **Preparar el instalador de OpenSSL**:
-   - Copiar el instalador de OpenSSL al directorio de trabajo (`release`)
-   - Renombrar el archivo como: `openssl-installer.exe`
-   - Asegurarse de que el archivo esté en la misma carpeta que `autofirma.exe`
-
-## Paso 4: Modificar afirma_installer.SED
-
-1. **Abrir el archivo** `release\afirma_installer.SED` en un editor de texto
-
-2. **Modificar las rutas según el sistema**:
-   - **IMPORTANTE**: Reemplazar todas las instancias de `[Definir_ruta]` con la ruta completa real donde se encuentra el proyecto
-   - Por ejemplo, si el proyecto está en `D:\develop\firma`, reemplazar `[Definir_ruta]` con `D:\develop\firma`
-   - Asegurarse de que las rutas apunten correctamente a:
-     - `openssl-installer.exe` (renombrado anteriormente)
-     - `autofirma-installer.exe` (el autoextraible creado con WinRAR)
-
-3. **Verificar las siguientes líneas** (después de reemplazar `[Definir_ruta]`):
-   ```
-   TargetName=D:\develop\firma\autofirma_installer.EXE
-   AppLaunched=openssl-installer.exe
-   PostInstallCmd=autofirma-installer.exe
-   FILE0="openssl-installer.exe"
-   FILE1="autofirma-installer.exe"
-   SourceFiles0=D:\develop\firma\release\
-   ```
-
-4. **Guardar los cambios**
-
-## Paso 5: Generar el Wizard con IExpress
-
-1. **Abrir IExpress**:
-   - Presionar **Win + R** para abrir el cuadro de diálogo "Ejecutar"
-   - Escribir `iexpress` y presionar Enter
-   - Se abrirá el asistente de IExpress
-
-2. **Cargar el archivo SED**:
-   - En la primera pantalla, seleccionar la opción: **"Create a Self Extraction Directive file"** o **"Create new Self Extraction Directive file"**
-   - En la siguiente pantalla, seleccionar: **"Extract files and run an installation command"**
-   - Continuar hasta llegar a la opción de cargar un archivo SED existente
-   - Alternativamente, desde el menú **File** → **Open**, cargar el archivo `release\afirma_installer.SED` modificado
-
-3. **Generar el instalador**:
-   - Si cargaste el archivo SED, revisar todas las configuraciones
-   - Hacer clic en **"Next"** hasta llegar al final
-   - En la última pantalla, hacer clic en **"Create Self Extraction Directive file"** para guardar el SED o **"Build"** para generar directamente el instalador
-   - El resultado será un archivo ejecutable `autofirma_installer.EXE` en la ubicación especificada en `TargetName`
-
-## Paso 6: Instrucciones de Uso del Instalador
-
-### Instalación de OpenSSL
-
-Al ejecutar el instalador generado (`autofirma_installer.EXE`):
-
-1. Se iniciará automáticamente el instalador de OpenSSL
-2. **Solo es necesario**:
-   - Hacer clic en **"Aceptar"** en las ventanas del instalador
-   - **Quitar la donación** si aparece alguna opción relacionada
-   - Seguir el proceso de instalación estándar
+## Paso 3: Instrucciones de Uso del Instalador
 
 ### Instalación de Autofirma
 
-1. Después de instalar OpenSSL, se ejecutará automáticamente el autoextraible de Autofirma
+Al ejecutar el autoextraible generado (`autofirma-installer.exe`):
+
+1. Se iniciará automáticamente el proceso de extracción
 2. **Solo es necesario**:
    - Hacer clic en **"Aceptar"** cuando se solicite
-   - El archivo se extraerá en la carpeta `Autofirma` según se configuró
+   - El contenido se extraerá en la carpeta `Autofirma` según se configuró
+   - La carpeta `bin` con los archivos de OpenSSL se extraerá junto con la aplicación
+   - La carpeta `media` con el logo y el certificado CA también se extraerá
 3. **Verificar el acceso directo**:
    - Comprobar que se haya creado correctamente el acceso directo en el escritorio
-   - El acceso directo debería apuntar a `autofirma.exe`
+   - El acceso directo debería apuntar a `autofirma.exe` dentro de la carpeta `Autofirma`
 
 ## Resumen de Archivos Generados
 
@@ -188,20 +166,24 @@ Al finalizar el proceso, deberías tener:
 
 - `release\autofirma.exe` - Ejecutable generado con Launch4j
 - `release\media\logo\logo.png` - Logo institucional (opcional)
-- `release\openssl-installer.exe` - Instalador de OpenSSL renombrado
-- `release\autofirma-installer.exe` - Archivo autoextraible creado con WinRAR (incluye `autofirma.exe` y carpeta `media` si existe)
-- `autofirma_installer.EXE` - Instalador final generado con IExpress (ubicación según `TargetName` en el SED)
-- `release\afirma_installer.SED` - Archivo de configuración de IExpress
+- `release\media\cert\CA.pem` - Certificado CA del SAT (cadena unificada de certificados)
+- `release\bin\openssl.exe` - Ejecutable de OpenSSL (agregado mediante medios externos)
+- `release\bin\libssl-3-x64.dll` - Biblioteca SSL de OpenSSL (agregado mediante medios externos)
+- `release\bin\libcrypto-3-x64.dll` - Biblioteca criptográfica de OpenSSL (agregado mediante medios externos)
+- `release\autofirma-installer.exe` - **Archivo autoextraible final creado con WinRAR** (incluye `autofirma.exe`, carpeta `media` y carpeta `bin`)
 - `release\launch4j_config.xml` - Archivo de configuración de Launch4j
 
 ## Notas Importantes
 
-- **CRÍTICO**: Antes de usar los archivos de configuración, reemplazar todas las instancias de `[Definir_ruta]` con la ruta completa real del proyecto
-- Los archivos con "_prod" en el nombre (como `afirma_installer_prod.SED`) contienen rutas personales y están ignorados por Git
-- Asegurarse de que todas las rutas en `afirma_installer.SED` sean absolutas y correctas después de reemplazar `[Definir_ruta]`
+- **CRÍTICO**: Antes de usar el archivo de configuración de Launch4j, reemplazar todas las instancias de `[Definir_ruta]` con la ruta completa real del proyecto
 - Verificar que el archivo `autofirma.jar` exista en `afirma-simple\target\`
 - El icono `.ico` debe estar disponible antes de ejecutar Launch4j
 - La carpeta `release` es el directorio de trabajo para todos los archivos del instalador
 - Si se incluye un logo personalizado, asegurarse de empaquetarlo junto con el EXE en el autoextraible
 - El logo debe estar en formato `.png` o `.jpg` y ubicado en `release\media\logo\logo.png`
-- Probar el instalador final en un sistema limpio antes de distribuirlo
+- **IMPORTANTE**: El archivo `CA.pem` debe estar en `release\media\cert\CA.pem` y contiene la cadena unificada de certificados del SAT
+- La carpeta `bin` con los archivos de OpenSSL (`openssl.exe`, `libssl-3-x64.dll`, `libcrypto-3-x64.dll`) se agregará mediante medios externos durante el proceso de build
+- Asegurarse de incluir la carpeta `bin` en el autoextraible junto con `autofirma.exe` y la carpeta `media`
+- No se requiere instalación completa de OpenSSL, solo los archivos portables en la carpeta `bin`
+- El archivo final `autofirma-installer.exe` es el único instalador necesario
+- Probar el autoextraible final en un sistema limpio antes de distribuirlo

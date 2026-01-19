@@ -530,7 +530,7 @@ final class ProtocolInvocationLauncherSign {
 		final boolean stickySignatory = options.getSticky();
 
 		final SignOperationResult operationResult = selectCertAndSign(pke, aoks, keyStoreLib, filterManager, stickySignatory,
-				data, algorithm, signer, cryptoOperation, extraParams);
+				data, algorithm, signer, cryptoOperation, extraParams, format);
 
 		pke = operationResult.getPke();
 		final byte[] signature = operationResult.getResult();
@@ -562,7 +562,7 @@ final class ProtocolInvocationLauncherSign {
 	private static SignOperationResult selectCertAndSign(final PrivateKeyEntry pkeSelected, final AOKeyStore aoks,
 			final String keyStoreLib, final CertFilterManager filterManager, final boolean stickySignatory,
 			final byte[] data, final String algorithm, final AOSigner signer,
-			final SignOperation.Operation cryptoOperation, final Properties extraParams)
+			final SignOperation.Operation cryptoOperation, final Properties extraParams, final String format)
 					throws SocketOperationException {
 
 		PrivateKeyEntry pke = pkeSelected;
@@ -672,7 +672,7 @@ final class ProtocolInvocationLauncherSign {
 			final CertFilterManager newFilterManager = new CertFilterManager(
 					filters, filters != null, true);
 			return selectCertAndSign(null, aoks, keyStoreLib, newFilterManager, stickySignatory,
-					data, signatureAlgorithm, signer, cryptoOperation, extraParams);
+					data, signatureAlgorithm, signer, cryptoOperation, extraParams, format);
 		}
 
 		return new SignOperationResult(sign, pke);
@@ -1073,4 +1073,5 @@ final class ProtocolInvocationLauncherSign {
 			}
 		}
 	}
+
 }
