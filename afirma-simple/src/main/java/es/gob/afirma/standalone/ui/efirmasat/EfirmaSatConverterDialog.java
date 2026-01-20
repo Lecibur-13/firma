@@ -343,27 +343,53 @@ public final class EfirmaSatConverterDialog extends JDialog {
 			}
 			LOGGER.info("Clave privada convertida a RSA PEM exitosamente"); //$NON-NLS-1$
 			
-			// Paso 3: Generar PFX
-			LOGGER.info("Paso 3: Generando archivo PFX..."); //$NON-NLS-1$
-			executeOpenSslCommandWithPassword(
-				passwordStr,
-				opensslPath,
-				"pkcs12", //$NON-NLS-1$
-				"-export", //$NON-NLS-1$
-				"-passin", "pass:" + passwordStr, //$NON-NLS-1$ //$NON-NLS-2$
-				"-passout", "pass:" + passwordStr, //$NON-NLS-1$ //$NON-NLS-2$
-				"-inkey", rsaKeyPemFile.getAbsolutePath(), //$NON-NLS-1$
-				"-in", certPemFile.getAbsolutePath(), //$NON-NLS-1$
-				"-out", pfxFile.getAbsolutePath() //$NON-NLS-1$
-			);
+			// Paso 3: Validar certificado contra CA.pem
+			LOGGER.info("Paso 3: Validando certificado contra CA.pem..."); //$NON-NLS-1$
+			final File caPemFile = findCaPemFile();
+			if (caPemFile != null && caPemFile.exists()) {
+				validateCertificateAgainstCA(opensslPath, certPemFile, caPemFile);
+			} else {
+				validateCertificateAgainstCA(opensslPath, certPemFile, null);
+			}
+			
+			// Paso 4: Generar PFX con CA como certificado raíz si está disponible
+			LOGGER.info("Paso 4: Generando archivo PFX..."); //$NON-NLS-1$
+			if (caPemFile != null && caPemFile.exists()) {
+				LOGGER.info("Incluyendo CA.pem como certificado raiz en el PFX para mayor fiabilidad"); //$NON-NLS-1$
+				executeOpenSslCommandWithPassword(
+					passwordStr,
+					opensslPath,
+					"pkcs12", //$NON-NLS-1$
+					"-export", //$NON-NLS-1$
+					"-passin", "pass:" + passwordStr, //$NON-NLS-1$ //$NON-NLS-2$
+					"-passout", "pass:" + passwordStr, //$NON-NLS-1$ //$NON-NLS-2$
+					"-inkey", rsaKeyPemFile.getAbsolutePath(), //$NON-NLS-1$
+					"-in", certPemFile.getAbsolutePath(), //$NON-NLS-1$
+					"-certfile", caPemFile.getAbsolutePath(), //$NON-NLS-1$
+					"-out", pfxFile.getAbsolutePath() //$NON-NLS-1$
+				);
+			} else {
+				LOGGER.warning("CA.pem no disponible, generando PFX sin certificado raiz"); //$NON-NLS-1$
+				executeOpenSslCommandWithPassword(
+					passwordStr,
+					opensslPath,
+					"pkcs12", //$NON-NLS-1$
+					"-export", //$NON-NLS-1$
+					"-passin", "pass:" + passwordStr, //$NON-NLS-1$ //$NON-NLS-2$
+					"-passout", "pass:" + passwordStr, //$NON-NLS-1$ //$NON-NLS-2$
+					"-inkey", rsaKeyPemFile.getAbsolutePath(), //$NON-NLS-1$
+					"-in", certPemFile.getAbsolutePath(), //$NON-NLS-1$
+					"-out", pfxFile.getAbsolutePath() //$NON-NLS-1$
+				);
+			}
 			
 			if (!pfxFile.exists()) {
 				throw new IOException("No se pudo crear el archivo PFX"); //$NON-NLS-1$
 			}
 			LOGGER.info("Archivo PFX generado exitosamente: " + pfxFile.getAbsolutePath()); //$NON-NLS-1$
 			
-			// Paso 4: Abrir el PFX para instalarlo en Windows
-			LOGGER.info("Paso 4: Abriendo PFX para instalacion en Windows..."); //$NON-NLS-1$
+			// Paso 5: Abrir el PFX para instalarlo en Windows
+			LOGGER.info("Paso 5: Abriendo PFX para instalacion en Windows..."); //$NON-NLS-1$
 			
 			// Verificar que el archivo existe
 			if (!pfxFile.exists()) {
@@ -557,15 +583,33 @@ public final class EfirmaSatConverterDialog extends JDialog {
 	/** Busca OpenSSL en el sistema.
 	 * @return Ruta completa a openssl.exe o "openssl" si está en el PATH, o null si no se encuentra */
 	private static String findOpenSsl() {
-		// PRIORIDAD 1: Intentar con "openssl" directamente (si está en el PATH)
-		if (isOpenSslAvailable("openssl")) { //$NON-NLS-1$
-			LOGGER.info("OpenSSL encontrado en el PATH del sistema"); //$NON-NLS-1$
-			return "openssl"; //$NON-NLS-1$
+		// PRIORIDAD 1: Buscar en bin/openssl.exe relativo al directorio de trabajo actual (user.dir)
+		final String userDir = System.getProperty("user.dir"); //$NON-NLS-1$
+		if (userDir != null) {
+			final File opensslInBin = new File(userDir, "bin" + File.separator + "openssl.exe"); //$NON-NLS-1$ //$NON-NLS-2$
+			if (opensslInBin.exists() && isOpenSslAvailable(opensslInBin.getAbsolutePath())) {
+				LOGGER.info("OpenSSL encontrado en bin/openssl.exe relativo al directorio de trabajo: " + opensslInBin.getAbsolutePath()); //$NON-NLS-1$
+				return opensslInBin.getAbsolutePath();
+			}
 		}
 		
-		// PRIORIDAD 2: Buscar en el directorio de instalación de Autofirma
+		// PRIORIDAD 2: Buscar en bin/openssl.exe relativo al directorio de instalación de Autofirma
 		final File appDir = DesktopUtil.getApplicationDirectory();
 		if (appDir != null) {
+			// Buscar en bin/openssl.exe (similar a como se busca media/logo/)
+			final File opensslInBin = new File(appDir, "bin" + File.separator + "openssl.exe"); //$NON-NLS-1$ //$NON-NLS-2$
+			if (opensslInBin.exists() && isOpenSslAvailable(opensslInBin.getAbsolutePath())) {
+				LOGGER.info("OpenSSL encontrado en bin/openssl.exe relativo al directorio de instalación: " + opensslInBin.getAbsolutePath()); //$NON-NLS-1$
+				return opensslInBin.getAbsolutePath();
+			}
+			// También buscar en el directorio padre (similar a como se busca media/logo/)
+			if (appDir.getParentFile() != null) {
+				final File opensslInParentBin = new File(appDir.getParentFile(), "bin" + File.separator + "openssl.exe"); //$NON-NLS-1$ //$NON-NLS-2$
+				if (opensslInParentBin.exists() && isOpenSslAvailable(opensslInParentBin.getAbsolutePath())) {
+					LOGGER.info("OpenSSL encontrado en bin/openssl.exe relativo al directorio padre: " + opensslInParentBin.getAbsolutePath()); //$NON-NLS-1$
+					return opensslInParentBin.getAbsolutePath();
+				}
+			}
 			// Buscar en openssl/bin/openssl.exe (estructura estándar de OpenSSL)
 			final File opensslInApp = new File(appDir, "openssl" + File.separator + "bin" + File.separator + "openssl.exe"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			if (opensslInApp.exists() && isOpenSslAvailable(opensslInApp.getAbsolutePath())) {
@@ -580,7 +624,13 @@ public final class EfirmaSatConverterDialog extends JDialog {
 			}
 		}
 		
-		// PRIORIDAD 3: En Windows, buscar en ubicaciones comunes usando variables de entorno
+		// PRIORIDAD 3: Intentar con "openssl" directamente (si está en el PATH)
+		if (isOpenSslAvailable("openssl")) { //$NON-NLS-1$
+			LOGGER.info("OpenSSL encontrado en el PATH del sistema"); //$NON-NLS-1$
+			return "openssl"; //$NON-NLS-1$
+		}
+		
+		// PRIORIDAD 4: En Windows, buscar en ubicaciones comunes usando variables de entorno
 		if (Platform.OS.WINDOWS.equals(Platform.getOS())) {
 			final List<String> commonPaths = new ArrayList<>();
 			
@@ -853,6 +903,133 @@ public final class EfirmaSatConverterDialog extends JDialog {
 		}
 		
 		return command;
+	}
+	
+	/** Busca el archivo CA.pem en media/cert.
+	 * @return Archivo CA.pem o null si no se encuentra */
+	private static File findCaPemFile() {
+		// Buscar en varias ubicaciones posibles:
+		// 1. Relativo al directorio de trabajo actual (user.dir)
+		final String userDir = System.getProperty("user.dir"); //$NON-NLS-1$
+		if (userDir != null) {
+			final File caFile = new File(userDir, "media" + File.separator + "cert" + File.separator + "CA.pem"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			if (caFile.exists() && caFile.isFile()) {
+				LOGGER.info("CA.pem encontrado en: " + caFile.getAbsolutePath()); //$NON-NLS-1$
+				return caFile;
+			}
+		}
+		
+		// 2. Relativo al directorio de la aplicación
+		final File appDir = DesktopUtil.getApplicationDirectory();
+		if (appDir != null) {
+			// Intentar en el mismo directorio que el JAR
+			File caFile = new File(appDir, "media" + File.separator + "cert" + File.separator + "CA.pem"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			if (caFile.exists() && caFile.isFile()) {
+				LOGGER.info("CA.pem encontrado en: " + caFile.getAbsolutePath()); //$NON-NLS-1$
+				return caFile;
+			}
+			// Intentar en el directorio padre
+			if (appDir.getParentFile() != null) {
+				caFile = new File(appDir.getParentFile(), "media" + File.separator + "cert" + File.separator + "CA.pem"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				if (caFile.exists() && caFile.isFile()) {
+					LOGGER.info("CA.pem encontrado en: " + caFile.getAbsolutePath()); //$NON-NLS-1$
+					return caFile;
+				}
+			}
+		}
+		
+		LOGGER.warning("CA.pem no encontrado en ninguna ubicacion conocida"); //$NON-NLS-1$
+		return null;
+	}
+	
+	/** Valida el certificado PEM contra el CA.pem usando OpenSSL.
+	 * @param opensslPath Ruta a OpenSSL
+	 * @param certPemFile Archivo del certificado en formato PEM
+	 * @param caPemFile Archivo CA.pem (puede ser null si no existe)
+	 * @throws IOException Si la validación falla o el CA.pem no existe */
+	private static void validateCertificateAgainstCA(final String opensslPath, final File certPemFile, final File caPemFile) throws IOException {
+		if (caPemFile == null || !caPemFile.exists()) {
+			final String warningMessage = "ADVERTENCIA: No se encontro el archivo CA.pem en media/cert.\n" + //$NON-NLS-1$
+					"El certificado generado puede no ser valido sin la cadena de certificados completa.\n" + //$NON-NLS-1$
+					"Se recomienda tener el archivo CA.pem en media/cert para garantizar la validez del certificado."; //$NON-NLS-1$
+			LOGGER.warning(warningMessage); //$NON-NLS-1$
+			
+			// Mostrar advertencia al usuario
+			final int result = AOUIFactory.showConfirmDialog(
+				null,
+				warningMessage + "\n\n¿Desea continuar con la conversion de todas formas?", //$NON-NLS-1$
+				"Advertencia: CA.pem no encontrado", //$NON-NLS-1$
+				JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE
+			);
+			
+			if (result != JOptionPane.YES_OPTION) {
+				throw new IOException("Conversion cancelada por el usuario debido a la ausencia del archivo CA.pem"); //$NON-NLS-1$
+			}
+			return; // Continuar sin validación
+		}
+		
+		// Validar el certificado contra el CA usando OpenSSL
+		LOGGER.info("Validando certificado contra CA.pem: " + caPemFile.getAbsolutePath()); //$NON-NLS-1$
+		
+		try {
+			final ProcessBuilder pb = new ProcessBuilder(
+				opensslPath,
+				"verify", //$NON-NLS-1$
+				"-CAfile", caPemFile.getAbsolutePath(), //$NON-NLS-1$
+				certPemFile.getAbsolutePath() //$NON-NLS-1$
+			);
+			pb.redirectErrorStream(true);
+			final Process process = pb.start();
+			
+			final StringBuilder output = new StringBuilder();
+			try (final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+				String line;
+				while ((line = reader.readLine()) != null) {
+					LOGGER.info("OpenSSL verify: " + line); //$NON-NLS-1$
+					output.append(line).append("\n"); //$NON-NLS-1$
+				}
+			}
+			
+			final int exitCode = process.waitFor();
+			final String outputStr = output.toString();
+			
+			if (exitCode == 0) {
+				// Verificar que la salida contenga "OK"
+				if (outputStr.contains("OK") || outputStr.contains(": OK")) { //$NON-NLS-1$ //$NON-NLS-2$
+					LOGGER.info("Certificado validado exitosamente contra CA.pem"); //$NON-NLS-1$
+					return;
+				}
+			}
+			
+			// Si llegamos aquí, la validación falló
+			final String errorMessage = "El certificado no es valido contra el CA.pem.\n" + //$NON-NLS-1$
+					"Salida de OpenSSL:\n" + outputStr; //$NON-NLS-1$
+			LOGGER.severe(errorMessage); //$NON-NLS-1$
+			
+			// Mostrar error al usuario
+			final int result = AOUIFactory.showConfirmDialog(
+				null,
+				errorMessage + "\n\n¿Desea continuar con la conversion de todas formas?\n" + //$NON-NLS-1$
+				"ADVERTENCIA: El certificado generado puede no ser valido.", //$NON-NLS-1$
+				"Error: Certificado no valido", //$NON-NLS-1$
+				JOptionPane.YES_NO_OPTION,
+				JOptionPane.ERROR_MESSAGE
+			);
+			
+			if (result != JOptionPane.YES_OPTION) {
+				throw new IOException("Conversion cancelada por el usuario: certificado no valido contra CA.pem"); //$NON-NLS-1$
+			}
+			LOGGER.warning("Usuario decidio continuar a pesar de la validacion fallida"); //$NON-NLS-1$
+		}
+		catch (final InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new IOException("Proceso de validacion interrumpido", e); //$NON-NLS-1$
+		}
+		catch (final Exception e) {
+			LOGGER.severe("Error durante la validacion del certificado: " + e.getMessage()); //$NON-NLS-1$
+			throw new IOException("Error al validar el certificado contra CA.pem: " + e.getMessage(), e); //$NON-NLS-1$
+		}
 	}
 	
 	/** Muestra el di&aacute;logo. */
