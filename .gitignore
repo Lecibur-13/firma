@@ -83,7 +83,9 @@ media/cert/*
 *_prod.SED
 *_prod.xml
 release/*.exe
+release/*.zip
 release/*.log
+release/jre/*
 release/media/logo/*
 release/media/cert/*
 

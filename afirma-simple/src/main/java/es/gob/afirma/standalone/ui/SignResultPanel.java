@@ -39,6 +39,11 @@ final class SignResultPanel extends JPanel {
     private final JLabel linkLabel = new JLabel();
     private final JLabel validationLinkLabel = new JLabel();
 
+    {
+        // Ocultar el linkLabel por defecto, ya no se usa
+        this.linkLabel.setVisible(false);
+    }
+
     private String accessibleDescription = ""; //$NON-NLS-1$
 
     SignResultPanel(final List<SignValidity> validity, final boolean singleSign, final KeyListener extKeyListener) {
@@ -77,20 +82,6 @@ final class SignResultPanel extends JPanel {
 
                 this.resultTextLabel.setText(SimpleAfirmaMessages.getString("SignResultPanel.2")); //$NON-NLS-1$
                 this.descTextLabel.setText("<html><p>" + SimpleAfirmaMessages.getString("SignResultPanel.3") + "</p></html>"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                this.linkLabel.setText(SimpleAfirmaMessages.getString("SignResultPanel.33")); //$NON-NLS-1$
-
-            	// Este gestor se encargara de controlar los eventos de foco y raton
-                LabelLinkManager labelLinkManager = new LabelLinkManager(this.linkLabel);
-                labelLinkManager.setLabelLinkListener(new URLLabelLinkImpl(
-                		SimpleAfirmaMessages.getString("SignResultPanel.33") //$NON-NLS-1$
-                ));
-
-                if (extKeyListener != null) {
-                	this.linkLabel.addKeyListener(extKeyListener);
-                }
-
-                this.linkLabel.getAccessibleContext().setAccessibleName(SimpleAfirmaMessages.getString("SignDataPanel.46") //$NON-NLS-1$
-                		+ SimpleAfirmaMessages.getString("SignResultPanel.33")); //$NON-NLS-1$
 
             	// Este gestor se encargara de controlar los eventos de foco y raton
                 final LabelLinkManager detailsSignLinkManager = new LabelLinkManager(this.validationLinkLabel);
@@ -103,9 +94,7 @@ final class SignResultPanel extends JPanel {
                 		+ SimpleAfirmaMessages.getString("SignResultPanel.38")); //$NON-NLS-1$
 
                 this.accessibleDescription += SimpleAfirmaMessages.getString("SignResultPanel.2") //$NON-NLS-1$
-                						 + SimpleAfirmaMessages.getString("SignResultPanel.3") //$NON-NLS-1$
-                						 + SimpleAfirmaMessages.getString("SignDataPanel.46") //$NON-NLS-1$
-                						 + SimpleAfirmaMessages.getString("SignResultPanel.33"); //$NON-NLS-1$
+                						 + SimpleAfirmaMessages.getString("SignResultPanel.3"); //$NON-NLS-1$
 
                 resultOperationIconTooltip = SimpleAfirmaMessages.getString("SignResultPanel.4"); //$NON-NLS-1$
                 break;
@@ -118,8 +107,7 @@ final class SignResultPanel extends JPanel {
             		this.descTextLabel.setText("<html><p>" + okMessage + "</p></html>"); //$NON-NLS-1$ //$NON-NLS-2$
             		resultOperationIconTooltip = SimpleAfirmaMessages.getString("SignResultPanel.10"); //$NON-NLS-1$
                     this.accessibleDescription += SimpleAfirmaMessages.getString("SignResultPanel.8") //$NON-NLS-1$
-   						 						+ okMessage
-   						 						+ SimpleAfirmaMessages.getString("SignResultPanel.33"); //$NON-NLS-1$
+   						 						+ okMessage;
 
                 	// Este gestor se encargara de controlar los eventos de foco y raton
                     final LabelLinkManager okDetailsSignLinkManager = new LabelLinkManager(this.validationLinkLabel);
@@ -138,23 +126,8 @@ final class SignResultPanel extends JPanel {
             		resultOperationIconTooltip = SimpleAfirmaMessages.getString("SignResultPanel.29"); //$NON-NLS-1$
 
                     this.accessibleDescription += SimpleAfirmaMessages.getString("SignResultPanel.27") //$NON-NLS-1$
-   						 						+ SimpleAfirmaMessages.getString("SignResultPanel.28") //$NON-NLS-1$
-                    								+ SimpleAfirmaMessages.getString("SignResultPanel.33"); //$NON-NLS-1$
+   						 						+ SimpleAfirmaMessages.getString("SignResultPanel.28"); //$NON-NLS-1$
             	}
-                this.linkLabel.setText(SimpleAfirmaMessages.getString("SignResultPanel.33")); //$NON-NLS-1$
-
-            	// Este gestor se encargara de controlar los eventos de foco y raton
-                labelLinkManager = new LabelLinkManager(this.linkLabel);
-                labelLinkManager.setLabelLinkListener(new URLLabelLinkImpl(
-						SimpleAfirmaMessages.getString("SignResultPanel.33") //$NON-NLS-1$
-				));
-
-                if (extKeyListener != null) {
-                	this.linkLabel.addKeyListener(extKeyListener);
-                }
-
-                this.linkLabel.getAccessibleContext().setAccessibleName(SimpleAfirmaMessages.getString("SignDataPanel.46") //$NON-NLS-1$
-                		+ SimpleAfirmaMessages.getString("SignResultPanel.33")); //$NON-NLS-1$
                 break;
             case KO:
                 if (singleSign) {
@@ -200,24 +173,10 @@ final class SignResultPanel extends JPanel {
                 	this.resultTextLabel.setText(SimpleAfirmaMessages.getString("SignResultPanel.30")); //$NON-NLS-1$
                     errorMessage = SimpleAfirmaMessages.getString("SignResultPanel.31"); //$NON-NLS-1$
                 	this.descTextLabel.setText("<html><p>" + errorMessage + "</p></html>"); //$NON-NLS-1$ //$NON-NLS-2$
-                    this.linkLabel.setText(SimpleAfirmaMessages.getString("SignResultPanel.33")); //$NON-NLS-1$
-
-                	// Este gestor se encargara de controlar los eventos de foco y raton
-                    labelLinkManager = new LabelLinkManager(this.linkLabel);
-                    labelLinkManager.setLabelLinkListener(new URLLabelLinkImpl(
-							SimpleAfirmaMessages.getString("SignResultPanel.33") //$NON-NLS-1$
-					));
-
-                    if (extKeyListener != null) {
-                    	this.linkLabel.addKeyListener(extKeyListener);
-                    }
-
-                    this.linkLabel.getAccessibleContext().setAccessibleName(SimpleAfirmaMessages.getString("SignDataPanel.46") //$NON-NLS-1$
-                    		+ SimpleAfirmaMessages.getString("SignResultPanel.33")); //$NON-NLS-1$
+                    
                     resultOperationIconTooltip = SimpleAfirmaMessages.getString("SignResultPanel.32"); //$NON-NLS-1$
                     this.accessibleDescription += SimpleAfirmaMessages.getString("SignResultPanel.30") //$NON-NLS-1$
-   						 						+ errorMessage
-   						 						+ SimpleAfirmaMessages.getString("SignResultPanel.33"); //$NON-NLS-1$
+   						 						+ errorMessage;
                 }
                 break;
             default:
@@ -276,7 +235,7 @@ final class SignResultPanel extends JPanel {
         c.fill = GridBagConstraints.BOTH;
         c.weightx = 0.0;
         c.weighty = 1.0;
-        c.gridheight = 3;
+        c.gridheight = 2;
         c.insets = new Insets(11, 11, 0, 5);
        	this.add(resultOperationIcon, c);
         c.weightx = 1.0;
@@ -291,9 +250,6 @@ final class SignResultPanel extends JPanel {
         this.add(this.descTextLabel, c);
         c.weighty = 0.0;
         c.gridy = 2;
-        c.insets = new Insets(0, 6, 0, 11);
-        this.add(this.linkLabel, c);
-        c.gridy = 3;
         c.insets = new Insets(0, 6, 0, 11);
         this.add(this.validationLinkLabel, c);
 

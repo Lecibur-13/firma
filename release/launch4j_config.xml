@@ -13,9 +13,9 @@
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
   <manifest></manifest>
-  <icon></icon>
+  <icon>[Definir_ruta]\logo.ico</icon>
   <jre>
-    <path>%JAVA_HOME%;%PATH%</path>
+    <path>jre</path>
     <requiresJdk>false</requiresJdk>
     <requires64Bit>false</requires64Bit>
     <minVersion></minVersion>
